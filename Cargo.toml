@@ -1,0 +1,11 @@
+[package]
+name = "test_tui_more_competent"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+color-eyre = "0.6.5"
+crossterm = "0.29.0"
+rand = "0.9.2"
+ratatui = "0.29.0"
+serialport = { version = "4.8.1", default-features = false }
