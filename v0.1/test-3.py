@@ -18,8 +18,6 @@ from ui_setup import setup_interface
 
 # Configuration for the HTTP server and map
 HTTP_PORT = 8007
-MAP_POLL_INTERVAL = 1.5  # seconds (browser poll)
-MAP_FILENAME = "cansat_flight_map.html"
 
 # Shared state for telemetry and GPS data
 telemetry_lock = threading.Lock()

@@ -2,11 +2,11 @@ import threading
 import socketserver
 from http.server import SimpleHTTPRequestHandler
 import json
-from shared_state import telemetry_lock, gps_history
+from shared_state import telemetry_lock, gps_history, MAX_POINTS
 
-HTTP_PORT = 8005
+HTTP_PORT = 0
+
 MAP_POLL_INTERVAL = 1.5  # seconds (browser poll)
-MAP_FILENAME = "cansat_flight_map.html"
 
 POLL_MS = int(MAP_POLL_INTERVAL * 1000)
 
@@ -32,21 +32,35 @@ let lastMarker = null;
 async function fetchPoints(){
   try {
     const res = await fetch('/points.json');
-    if(!res.ok) return;
+    if (!res.ok) return;
+
     const data = await res.json();
-    if(!data || !data.lat || data.lat.length===0) return;
-    const lat = data.lat;
-    const lon = data.lon;
+    if (!data || !Array.isArray(data.lat) || data.lat.length === 0) return;
+
     const pts = [];
-    for(let i=0;i<lat.length;i++){ pts.push([lat[i], lon[i]]); }
-    poly.setLatLngs(pts);
-    if(pts.length>0){
-      const last = pts[pts.length-1];
-      if(lastMarker) map.removeLayer(lastMarker);
-      lastMarker = L.circleMarker(last, {radius:6, color:'green'}).addTo(map);
-      map.setView(last, map.getZoom());
+    for (let i = 0; i < data.lat.length; i++) {
+      const lat = data.lat[i];
+      const lon = data.lon[i];
+
+      // skip zero points
+      if (lat === 0 && lon === 0) continue;
+
+      pts.push([lat, lon]);
     }
-  } catch(e){ console.log('fetchPoints error', e); }
+
+    // nothing valid -> don't update map
+    if (pts.length === 0) return;
+
+    poly.setLatLngs(pts);
+
+    const last = pts[pts.length - 1];
+    if (lastMarker) map.removeLayer(lastMarker);
+    lastMarker = L.circleMarker(last, { radius: 11, color: 'green' }).addTo(map);
+    map.setView(last, map.getZoom());
+
+  } catch (e) {
+    console.log('fetchPoints error', e);
+  }
 }
 setInterval(fetchPoints, __POLL_MS__);
 fetchPoints();
