@@ -1,0 +1,9 @@
+FREQ           = 433.1
+ENCRYPTION_KEY = b"\x01\x02\x03\x04\x05\x06\x07\x08\x01\x02\x03\x04\x05\x06\x07\x08"
+NODE_ID        = 120
+BASESTATION_ID = 100
+
+BASELINE       = 1019.0
+SYNC_INTERVAL  = 50
+
+DEBUG = True
