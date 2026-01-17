@@ -117,15 +117,34 @@ def get_sensor_packet():
     try:
         if bmp is None:
             logger.add_error_line("BMP280 not initialized.")
-            return "T,%d,0,ERR,ERR,ERR,ERR" % counter
+            return "T,%d,%.1f,0,0,0,0" % (counter, last_rssi)
+
+        # Read sensor ONCE
         t, p, h = bmp.raw_values
-        if p is None or p == 0:
+
+        # Validate pressure
+        if p is None or p <= 0:
             logger.add_error_line("Invalid pressure value.")
             return "T,%d,%.1f,0,0,0,0" % (counter, last_rssi)
+
+        # Compute altitude ONCE
         alt = (baseline - p) * 8.3
-        log_message = f"Sensor data - T: {t}, P: {p}, H: {h}, Alt: {alt}"
-        logger.add_info_line(log_message)
-        return "T,%d,%.1f,%.1f,%.1f,%.0f,%.1f" % (counter, last_rssi, t, p, h, alt)
+
+        # Log using cached values
+        logger.add_info_line(
+            f"Sensor data - T: {t}, P: {p}, H: {h}, Alt: {alt}"
+        )
+
+        # Build packet using same values
+        return "T,%d,%.1f,%.1f,%.1f,%.0f,%.1f" % (
+            counter,
+            last_rssi,
+            t,
+            p,
+            h,
+            alt
+        )
+
     except Exception as e:
         logger.add_error_line(f"Sensor Read Error: {e}")
         return "T,%d,%.1f,FAIL,FAIL,FAIL,FAIL" % (counter, last_rssi)
