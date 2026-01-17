@@ -55,6 +55,21 @@ last_rssi = 0.0
 has_gps_fix = False
 search_mode_active = True
 
+def init_gps_neo6m():
+    time.sleep(1)  # Let GPS boot
+
+    # Enable RMC + GGA only (clean + low bandwidth)
+    gps_serial.write(
+        b"$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n"
+    )
+
+    # Set update rate to 1Hz (stable for MicropyGPS)
+    gps_serial.write(
+        b"$PMTK220,1000*1F\r\n"
+    )
+
+    print("NEO-6M GPS configured")
+
 def search_mode():
     """Initialize GPS and wait for valid time. LED blinks fast during search mode."""
     from machine import RTC
@@ -123,19 +138,34 @@ def get_gps_packet():
             if data:
                 for byte in data:
                     if my_gps.update(chr(byte)):
+
+                        # Check fix once
                         if my_gps.date[2] >= 24:
                             has_gps_fix = True
-                        log_message = f"GPS data - Lat: {my_gps.latitude_string()}, Lon: {my_gps.longitude_string()}, Alt: {my_gps.altitude}, Sats: {my_gps.satellites_in_use}"
-                        logger.add_info_line(log_message)
-                        return "G,%d,%s,%s,%.1f,%d" % (
-                            counter,
-                            my_gps.latitude_string(),
-                            my_gps.longitude_string(),
-                            my_gps.altitude,
-                            my_gps.satellites_in_use
+
+                        # Read GPS values ONCE
+                        lat = my_gps.latitude_string()
+                        lon = my_gps.longitude_string()
+                        alt = my_gps.altitude
+                        sats = my_gps.satellites_in_use
+
+                        # Log using cached values
+                        logger.add_info_line(
+                            f"GPS data - Lat: {lat}, Lon: {lon}, Alt: {alt}, Sats: {sats}"
                         )
+
+                        # Use same cached values for packet
+                        return "G,%d,%s,%s,%4.1f,%d" % (
+                            counter,
+                            lat,
+                            lon,
+                            alt,
+                            sats
+                        )
+
     except Exception as e:
         logger.add_error_line(f"GPS Error: {e}")
+
     return None
 
 def get_sync_packet():
@@ -179,6 +209,7 @@ def initialize_logger():
     print(f"Logger initialized. Log file: {logger.log_file_path}")
 
 # --- Main Loop ---
+init_gps_neo6m()
 print("CANSAT Node Active. Starting in Search Mode.")
 search_mode()
 initialize_logger()
