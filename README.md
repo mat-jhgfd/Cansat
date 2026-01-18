@@ -53,6 +53,5 @@ sudo ampy --port /dev/ttyACM0 put file.py
 ^ This transfer a file from your machine to the pico
 
 # For documentation
-```
 ## python
 There are comment to help.
