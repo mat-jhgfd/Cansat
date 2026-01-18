@@ -1,34 +1,40 @@
 import time
 from hardware import led
-import gps
-from gps import init_gps_neo6m, search_mode, get_gps_packet, get_sync_packet
+from gps import GPSModule
 from sensors import get_sensor_packet
-from radio import transmit, last_rssi
+from radio import RadioTransmitter
 from logger_init import initialize_logger
 from config import SYNC_INTERVAL
 
 counter = 1
 
-init_gps_neo6m()
-search_mode()
+# Initialize modules
+gps_module = GPSModule()
+radio = RadioTransmitter()
 logger = initialize_logger()
+
+# GPS initialization
+gps_module.init_gps_neo6m()
+gps_module.search_mode()
 
 print("Normal Mode started")
 
 while True:
     led.toggle()
-
-    if not gps.has_gps_fix or (counter % SYNC_INTERVAL == 0):
-        transmit(gps.get_sync_packet(counter))
+    
+    # Transmit sync packet if no GPS fix or at sync interval
+    if not gps_module.has_gps_fix or (counter % SYNC_INTERVAL == 0):
+        radio.transmit(gps_module.get_sync_packet(counter))
         time.sleep(0.05)
-
-    transmit(get_sensor_packet(counter, last_rssi, logger))
+    
+    # Transmit sensor data
+    radio.transmit(get_sensor_packet(counter, radio.last_rssi, logger))
     time.sleep(0.05)
-
-    gps_msg = get_gps_packet(counter, logger)
+    
+    # Transmit GPS data if available
+    gps_msg = gps_module.get_gps_packet(counter, logger)
     if gps_msg:
-        transmit(gps_msg)
+        radio.transmit(gps_msg)
         time.sleep(0.05)
-
+    
     counter += 1
-
