@@ -2,7 +2,7 @@ import serial
 import threading
 import time
 import re
-from shared_state import telemetry_lock, telemetry_latest, history, gps_history
+from shared_state import telemetry_lock, telemetry_latest, history, gps_history, MAX_POINTS
 
 class SerialReader(threading.Thread):
     def __init__(self, port="/dev/ttyACM0", baud=115200):
