@@ -2,15 +2,22 @@
 Tree of the project
 ```
 .
-├── bme280.py
+├── code_on_cansat
+│   ├── bme280.py
+│   ├── config.py
+│   ├── gps.py
+│   ├── hardware.py
+│   ├── logger_init.py
+│   ├── main.py
+│   ├── micropyGPS.py
+│   ├── radio.py
+│   ├── rfm69.py
+│   ├── sensors.py
+│   └── test_tobias.py
 ├── flake.lock
 ├── flake.nix
-├── main.py
-├── micropyGPS.py
 ├── README.md
-├── rfm69.py
 ├── test_receiver_matteo.py
-├── test_tobias.py
 └── v0.1
     ├── graph_update.py
     ├── http_server.py
