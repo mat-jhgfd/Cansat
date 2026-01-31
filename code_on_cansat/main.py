@@ -21,6 +21,7 @@ if not DEBUG:
     print("Normal Mode started")
 else :
     print("Debug mode activated, gps not prioritised")
+    gps_module.has_gps_fix = True
 
 while True:
     led.toggle()
